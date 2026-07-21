@@ -1,0 +1,36 @@
+{
+  "name": "umc-meal-server",
+  "version": "1.0.0",
+  "description": "Backend API cho hệ thống đăng ký suất ăn UMC Việt Nam",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node scripts/start-dev.js",
+    "start": "node src/server.js",
+    "seed": "node prisma/seed.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "@prisma/adapter-neon": "^6.2.1",
+    "@prisma/client": "^6.2.1",
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.0.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "inngest": "^3.27.5",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.16",
+    "socket.io": "^4.8.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.2.1",
+    "xlsx": "^0.18.5"
+  }
+}

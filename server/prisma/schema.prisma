@@ -1,0 +1,436 @@
+// Prisma schema cho hệ thống đăng ký suất ăn UMC Việt Nam
+// DB: PostgreSQL (Neon serverless)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  EMPLOYEE
+  MANAGER
+  CANTEEN
+  ADMIN
+}
+
+enum RegistrationStatus {
+  PENDING // Chờ duyệt
+  APPROVED // Đã duyệt
+  CANCELLED // Hủy
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// Loại ca: ngày (suất 40') hay đêm (suất 45')
+enum ShiftPeriod {
+  DAY
+  NIGHT
+}
+
+// Loại suất nhân viên chọn khi đăng ký.
+enum MealType {
+  STANDARD // Suất thường (2 món chính)
+  ALTERNATIVE // Suất cải tiến (bún / miến thay 2 món chính)
+}
+
+// Loại lô đăng ký: suất thường ngày, hay suất tăng ca báo thêm cho thực tập sinh.
+// Nhân viên chính thức tăng ca mặc định có suất trong lô thường — không cần báo riêng.
+enum BatchType {
+  NORMAL // Suất ăn thường theo ca cố định
+  OVERTIME_INTERN // Suất tăng ca báo thêm cho thực tập sinh
+}
+
+// Phân loại món ăn trong thực đơn.
+enum DishCategory {
+  MAIN // Món chính (thường có 2)
+  SIDE // Món phụ
+  DESSERT // Tráng miệng
+  ALTERNATIVE // Món cải tiến thay thế (bún, miến...)
+}
+
+// Trạng thái xử lý một phản hồi/góp ý của công nhân về bữa ăn.
+enum FeedbackStatus {
+  OPEN // Mới gửi, chưa xử lý
+  RESOLVED // Đã xử lý / phản hồi
+}
+
+// Mức độ hài lòng kèm theo góp ý (tùy chọn).
+enum FeedbackRating {
+  GOOD
+  NORMAL
+  BAD
+}
+
+// Trạng thái yêu cầu mở tài khoản do người dùng tự đăng ký.
+enum AccountRequestStatus {
+  PENDING // Chờ admin duyệt
+  APPROVED // Đã duyệt -> đã tạo Employee
+  REJECTED // Bị từ chối
+}
+
+model Department {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  code      String?    @unique
+  employees Employee[]
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@map("departments")
+}
+
+model Employee {
+  id            String         @id @default(cuid())
+  employeeCode  String         @unique @map("employee_code")
+  fullName      String         @map("full_name")
+  email         String?        @unique
+  // Mật khẩu băm bằng bcrypt (auth JWT thuần). Null = chưa cấp tài khoản đăng nhập.
+  passwordHash  String?        @map("password_hash")
+  // Bắt buộc đổi mật khẩu ở lần đăng nhập đầu (mật khẩu mặc định = mã NV).
+  mustChangePassword Boolean   @default(true) @map("must_change_password")
+  phone         String?
+  role          Role           @default(EMPLOYEE)
+  status        EmployeeStatus @default(ACTIVE)
+  departmentId  String?        @map("department_id")
+  department    Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  registrations MealRegistration[]
+  batches       BatchRegistration[]
+  weeklyTemplates WeeklyScheduleTemplate[]
+  dishVotes     DishVote[]
+  closedPeriods ClosedPeriod[]
+  mealFeedbacks MealFeedback[]
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  @@index([departmentId])
+  @@map("employees")
+}
+
+// Đăng ký theo lô: leader/quản lý ca báo TỔNG SỐ suất cho 1 ca để nhà ăn chuẩn bị
+// (không cần tên từng người, không cần quét mã khi phát — nhà ăn phát khay trực tiếp).
+model BatchRegistration {
+  id                String    @id @default(cuid())
+  batchType         BatchType @default(NORMAL) @map("batch_type")
+  createdById       String    @map("created_by_id")        // leader tạo lô
+  createdBy         Employee  @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  departmentId      String?   @map("department_id")
+  departmentName    String?   @map("department_name")      // lưu tên để hiển thị kể cả khi phòng bị xóa
+  mealShiftId       String    @map("meal_shift_id")
+  mealShift         MealShift @relation(fields: [mealShiftId], references: [id], onDelete: Cascade)
+  mealDate          DateTime  @map("meal_date") @db.Date
+  qtyStandard       Int       @default(0) @map("qty_standard")     // số suất thường
+  qtyAlternative    Int       @default(0) @map("qty_alternative")  // số suất cải tiến
+  note              String?
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([mealDate])
+  @@index([batchType])
+  @@map("batch_registrations")
+}
+
+model MealShift {
+  id            String      @id @default(cuid())
+  name          String      @unique // VD: "Ca ngày 11h30", "Ca đêm 23h30"
+  period        ShiftPeriod @default(DAY) // DAY (40') | NIGHT (45')
+  startTime     String      @map("start_time") // "11:30"
+  endTime       String      @map("end_time") // "12:10"
+  durationMin   Int         @default(40) @map("duration_min") // 40 ngày, 45 đêm
+  order         Int         @default(0)
+  active        Boolean     @default(true)
+  // Hạn chót đăng ký trong ngày, dạng "HH:mm". Null = không giới hạn.
+  cutoffTime    String?     @map("cutoff_time")
+  // Công suất tối đa bếp nấu được cho ca này. Null = không giới hạn.
+  maxCapacity   Int?        @map("max_capacity")
+  registrations MealRegistration[]
+  batches       BatchRegistration[]
+  weeklyTemplates WeeklyScheduleTemplate[]
+  consumptions  MealConsumption[]
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  @@map("meal_shifts")
+}
+
+// Món ăn dùng lại trong nhiều thực đơn. Có hình ảnh.
+model Dish {
+  id          String       @id @default(cuid())
+  name        String
+  category    DishCategory
+  imageUrl    String?      @map("image_url")
+  description String?
+  active      Boolean      @default(true)
+  menuItems   MenuItem[]
+  votes       DishVote[]
+  ingredients DishIngredient[]
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@map("dishes")
+}
+
+// Thực đơn theo ngày (1 thực đơn / 1 ngày).
+model DailyMenu {
+  id        String     @id @default(cuid())
+  menuDate  DateTime   @unique @map("menu_date") @db.Date
+  note      String?
+  items     MenuItem[]
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@map("daily_menus")
+}
+
+// Một món trong thực đơn của ngày.
+model MenuItem {
+  id      String    @id @default(cuid())
+  menuId  String    @map("menu_id")
+  menu    DailyMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  dishId  String    @map("dish_id")
+  dish    Dish      @relation(fields: [dishId], references: [id], onDelete: Cascade)
+
+  @@unique([menuId, dishId])
+  @@map("menu_items")
+}
+
+// Đăng ký suất ăn đơn lẻ — dùng cho trường hợp đặc biệt (vd khách, người không
+// thuộc lô nào). ADMIN đăng ký hộ, chọn đích danh nhân viên (employeeId).
+// Không còn khái niệm "quét mã nhận cơm" — nhà ăn phát khay trực tiếp như suất lô.
+model MealRegistration {
+  id          String             @id @default(cuid())
+  employeeId  String             @map("employee_id")
+  employee    Employee           @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  mealShiftId String             @map("meal_shift_id")
+  mealShift   MealShift          @relation(fields: [mealShiftId], references: [id], onDelete: Cascade)
+  mealDate    DateTime           @map("meal_date") @db.Date
+  mealType    MealType           @default(STANDARD) @map("meal_type") // Thường | Cải tiến
+  status      RegistrationStatus @default(APPROVED)
+  note        String?
+  createdById String?            @map("created_by_id") // ADMIN đã đăng ký hộ ai
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+
+  // Mỗi nhân viên chỉ đăng ký 1 lần cho 1 ca trong 1 ngày
+  @@unique([employeeId, mealShiftId, mealDate])
+  @@index([mealDate])
+  @@index([status])
+  @@map("meal_registrations")
+}
+
+// Lịch đăng ký lô ĐỊNH KỲ theo tuần: leader đặt 1 lần "thứ mấy, ca nào, bao
+// nhiêu suất", hệ thống tự sinh BatchRegistration mỗi ngày theo lịch này —
+// leader không cần báo lại thủ công mỗi ngày, chỉ cần sửa khi có biến động.
+model WeeklyScheduleTemplate {
+  id             String    @id @default(cuid())
+  createdById    String    @map("created_by_id")
+  createdBy      Employee  @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  departmentId   String?   @map("department_id")
+  departmentName String?   @map("department_name")
+  mealShiftId    String    @map("meal_shift_id")
+  mealShift      MealShift @relation(fields: [mealShiftId], references: [id], onDelete: Cascade)
+  batchType      BatchType @default(NORMAL) @map("batch_type")
+  // Các thứ trong tuần áp dụng, dạng mảng số 1-7 (1=Thứ 2 ... 7=Chủ nhật).
+  weekdays       Int[]     @map("weekdays")
+  qtyStandard    Int       @default(0) @map("qty_standard")
+  qtyAlternative Int       @default(0) @map("qty_alternative")
+  note           String?
+  active         Boolean   @default(true)
+  // Ngày sinh lô gần nhất theo lịch này, để job không sinh trùng trong 1 ngày.
+  lastGeneratedDate DateTime? @map("last_generated_date") @db.Date
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([mealShiftId])
+  @@map("weekly_schedule_templates")
+}
+
+// Bình chọn món ăn: nhân viên vote thích/không thích 1 món trong thực đơn ngày.
+// Nhà ăn xem thống kê để điều chỉnh thực đơn theo khẩu vị số đông.
+model DishVote {
+  id         String   @id @default(cuid())
+  employeeId String   @map("employee_id")
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  dishId     String   @map("dish_id")
+  dish       Dish     @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  menuDate   DateTime @map("menu_date") @db.Date
+  // true = thích, false = không thích.
+  liked      Boolean
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Mỗi người chỉ vote 1 lần cho 1 món trong 1 ngày (vote lại thì update).
+  @@unique([employeeId, dishId, menuDate])
+  @@index([dishId])
+  @@index([menuDate])
+  @@map("dish_votes")
+}
+
+// Kỳ đã CHỐT SỔ: khóa toàn bộ đăng ký/lô của các ngày trong kỳ, không cho sửa/
+// xóa nữa để số liệu báo cáo tháng thành chính thức, phục vụ quyết toán.
+model ClosedPeriod {
+  id          String   @id @default(cuid())
+  // Kỳ chốt theo tháng, dạng "YYYY-MM".
+  month       String   @unique
+  closedById  String   @map("closed_by_id")
+  closedBy    Employee @relation(fields: [closedById], references: [id], onDelete: Cascade)
+  note        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("closed_periods")
+}
+
+// Cấu hình đơn giá suất ăn theo loại — dùng để tính chi phí báo cáo tháng.
+// Singleton: luôn chỉ có 1 dòng id = "default".
+model MealPricing {
+  id                 String   @id @default("default")
+  priceStandard      Int      @default(30000) @map("price_standard")      // đơn giá suất thường (VND)
+  priceAlternative   Int      @default(30000) @map("price_alternative")   // đơn giá suất cải tiến (VND)
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("meal_pricing")
+}
+
+// Yêu cầu mở tài khoản: leader tự đăng ký (email, mật khẩu, tên, bộ phận phụ trách),
+// admin xét duyệt rồi hệ thống mới tạo Employee thật để đăng nhập được.
+model AccountRequest {
+  id             String               @id @default(cuid())
+  email          String               @unique
+  fullName       String               @map("full_name")
+  // Mật khẩu do người đăng ký đặt, đã băm bcrypt — copy sang Employee khi duyệt.
+  passwordHash   String               @map("password_hash")
+  employeeCode   String?              @map("employee_code")
+  phone          String?
+  departmentId   String?              @map("department_id")
+  departmentName String?              @map("department_name")
+  // Vai trò mong muốn (mặc định MANAGER vì đăng ký chủ yếu dành cho leader).
+  requestedRole  Role                 @default(MANAGER) @map("requested_role")
+  status         AccountRequestStatus @default(PENDING)
+  reviewNote     String?              @map("review_note")
+  reviewedById   String?              @map("reviewed_by_id")
+  reviewedByName String?              @map("reviewed_by_name")
+  reviewedAt     DateTime?            @map("reviewed_at")
+  createdAt      DateTime             @default(now()) @map("created_at")
+
+  @@index([status])
+  @@map("account_requests")
+}
+
+// Ngày KHÔNG PHỤC VỤ (nghỉ lễ, bảo trì bếp...). Chặn mọi đăng ký/báo lô cho ngày đó.
+model NonServiceDay {
+  id          String   @id @default(cuid())
+  date        DateTime @unique @db.Date
+  reason      String? // vd: "Nghỉ lễ 30/4", "Bảo trì bếp"
+  createdById String?  @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("non_service_days")
+}
+
+// Phản hồi / góp ý của công nhân về chất lượng bữa ăn.
+model MealFeedback {
+  id           String         @id @default(cuid())
+  // Null = góp ý nhanh ẩn danh gửi từ màn hình trình chiếu ở nhà ăn.
+  employeeId   String?        @map("employee_id")
+  employee     Employee?      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  // true = đánh giá nhanh từ màn hình TV (chỉ có rating, không có nội dung chi tiết).
+  fromBoard    Boolean        @default(false) @map("from_board")
+  mealDate     DateTime       @map("meal_date") @db.Date
+  rating       FeedbackRating?
+  // Null với đánh giá nhanh từ TV (chỉ bấm mặt cười, không nhập chữ).
+  content      String?
+  status       FeedbackStatus @default(OPEN)
+  reply        String? // nội dung nhà ăn/admin phản hồi lại
+  repliedById  String?        @map("replied_by_id")
+  repliedByName String?       @map("replied_by_name")
+  repliedAt    DateTime?      @map("replied_at")
+  createdAt    DateTime       @default(now()) @map("created_at")
+
+  @@index([mealDate])
+  @@index([status])
+  @@map("meal_feedbacks")
+}
+
+// Định lượng nguyên liệu cho MỘT món (theo 1 suất). Dùng để tính tổng nguyên
+// liệu cần mua = định lượng x số suất đã báo cho các món trong thực đơn ngày.
+model DishIngredient {
+  id       String  @id @default(cuid())
+  dishId   String  @map("dish_id")
+  dish     Dish    @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  name     String // vd: "Thịt heo", "Gạo"
+  quantity Float   @default(0) // định lượng cho 1 suất
+  unit     String  @default("g") // đơn vị: g, ml, cái...
+
+  @@index([dishId])
+  @@map("dish_ingredients")
+}
+
+// Ghi nhận SỐ SUẤT THỰC TẾ đã ăn cho 1 ca/ngày (nhà ăn nhập cuối buổi) để so
+// với số đã báo -> đo lãng phí và tỷ lệ ăn thực tế theo thời gian.
+model MealConsumption {
+  id          String    @id @default(cuid())
+  mealDate    DateTime  @map("meal_date") @db.Date
+  mealShiftId String    @map("meal_shift_id")
+  mealShift   MealShift @relation(fields: [mealShiftId], references: [id], onDelete: Cascade)
+  actualServed Int      @default(0) @map("actual_served") // số suất thực tế phát ra
+  note        String?
+  recordedById String?  @map("recorded_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([mealDate, mealShiftId])
+  @@index([mealDate])
+  @@map("meal_consumptions")
+}
+
+// Nhật ký hoạt động (audit log) — ai làm gì, khi nào.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?  @map("actor_id")
+  actorName  String?  @map("actor_name")
+  action     String   // vd: EMPLOYEE_CREATE, MENU_UPDATE, PASSWORD_RESET
+  entity     String?  // vd: Employee, DailyMenu
+  entityId   String?  @map("entity_id")
+  detail     String?  // mô tả ngắn
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+// Thông báo in-app gửi tới nhân viên (hoặc broadcast theo role).
+model Notification {
+  id          String   @id @default(cuid())
+  // Người nhận cụ thể; null = broadcast theo targetRole (targetRole null = tất cả).
+  employeeId  String?  @map("employee_id")
+  targetRole  Role?    @map("target_role")
+  title       String
+  body        String?
+  link        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  reads       NotificationRead[]
+
+  @@index([employeeId])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// Trạng thái "đã đọc" theo TỪNG người (broadcast không thể dùng 1 cờ chung).
+model NotificationRead {
+  id             String       @id @default(cuid())
+  notificationId String       @map("notification_id")
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  employeeId     String       @map("employee_id")
+  readAt         DateTime     @default(now()) @map("read_at")
+
+  @@unique([notificationId, employeeId])
+  @@index([employeeId])
+  @@map("notification_reads")
+}
