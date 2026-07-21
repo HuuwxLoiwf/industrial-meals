@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Hệ thống Đăng ký & Tổng hợp Suất ăn Công nghiệp — UMC Việt Nam
 
 Hệ thống quản lý đăng ký, phát cơm qua QR, và tổng hợp báo cáo suất ăn hàng ngày tại nhà máy quy mô lớn (thiết kế cho ~5.000 công nhân).
@@ -71,3 +72,6 @@ Hoặc chạy cả hai cùng lúc bằng `run.bat` ở thư mục gốc (Windows
 9. Thông báo in-app (broadcast theo vai trò) + nhật ký hoạt động (audit log)
 
 Xem chi tiết phân tích hệ thống, hạn chế, và hướng phát triển tại [PHAN-TICH-HE-THONG.md](PHAN-TICH-HE-THONG.md).
+=======
+# industrial-meals
+>>>>>>> c1148e6826e4238e7eec401770bdbb2d35e1d786
