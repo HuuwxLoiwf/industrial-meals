@@ -1,0 +1,75 @@
+<mxfile host="app.diagrams.net" agent="python" type="device">
+  <diagram name="UseCase tong quat">
+    <mxGraphModel dx="1422" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1150" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="sysbox" value="HỆ THỐNG QUẢN LÝ SUẤT ĂN CÔNG NGHIỆP UMC VIỆT NAM" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;fontSize=14;fontStyle=1;fillColor=none;strokeColor=#000000;dashed=0;align=center" vertex="1" parent="1"><mxGeometry x="380" y="60" width="800" height="940" as="geometry"/></mxCell>
+        <mxCell id="c1" value="UC01. Quản lý xác thực
+&amp; tài khoản" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="440" y="110" width="290" height="110" as="geometry"/></mxCell>
+        <mxCell id="c2" value="UC02. Quản lý danh mục
+hệ thống" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="830" y="110" width="290" height="110" as="geometry"/></mxCell>
+        <mxCell id="c3" value="UC03. Quản lý thực đơn
+&amp; món ăn" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="440" y="260" width="290" height="110" as="geometry"/></mxCell>
+        <mxCell id="c4" value="UC04. Đăng ký suất ăn" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="830" y="260" width="290" height="110" as="geometry"/></mxCell>
+        <mxCell id="c5" value="UC05. Chuẩn bị &amp; ghi nhận
+suất ăn" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="440" y="410" width="290" height="110" as="geometry"/></mxCell>
+        <mxCell id="c6" value="UC06. Tổng hợp - Báo cáo
+- Thống kê" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="830" y="410" width="290" height="110" as="geometry"/></mxCell>
+        <mxCell id="c7" value="UC07. Tương tác &amp; phản hồi
+bữa ăn" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="440" y="560" width="290" height="110" as="geometry"/></mxCell>
+        <mxCell id="c8" value="UC08. Thông báo &amp; nhật ký
+hệ thống" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1"><mxGeometry x="830" y="560" width="290" height="110" as="geometry"/></mxCell>
+        <mxCell id="c9" value="Công nhân
+(EMPLOYEE)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=13;fontStyle=1" vertex="1" parent="1"><mxGeometry x="130" y="180" width="60" height="100" as="geometry"/></mxCell>
+        <mxCell id="c10" value="Trưởng bộ phận
+(MANAGER)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=13;fontStyle=1" vertex="1" parent="1"><mxGeometry x="130" y="400" width="60" height="100" as="geometry"/></mxCell>
+        <mxCell id="c11" value="Nhà ăn
+(CANTEEN)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=13;fontStyle=1" vertex="1" parent="1"><mxGeometry x="130" y="620" width="60" height="100" as="geometry"/></mxCell>
+        <mxCell id="c12" value="Quản trị viên
+(ADMIN)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=13;fontStyle=1" vertex="1" parent="1"><mxGeometry x="1390" y="300" width="60" height="100" as="geometry"/></mxCell>
+        <mxCell id="c13" value="Khách
+(chưa đăng nhập)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=13;fontStyle=1" vertex="1" parent="1"><mxGeometry x="1390" y="600" width="60" height="100" as="geometry"/></mxCell>
+        <mxCell id="e14" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c9" target="c1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e15" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c9" target="c3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e16" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c9" target="c4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e17" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c9" target="c7"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e18" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c9" target="c8"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e19" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c10" target="c1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e20" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c10" target="c4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e21" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c10" target="c5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e22" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c10" target="c6"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e23" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c10" target="c8"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e24" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c11" target="c1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e25" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c11" target="c3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e26" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c11" target="c5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e27" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c11" target="c6"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e28" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c11" target="c7"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e29" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c11" target="c8"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e30" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c12" target="c1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e31" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c12" target="c2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e32" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c12" target="c3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e33" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c12" target="c4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e34" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c12" target="c5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e35" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c12" target="c6"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e36" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c12" target="c7"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e37" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c12" target="c8"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e38" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c13" target="c1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e39" value="" style="endArrow=none;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c13" target="c7"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c40" value="Quan hệ tổng quát hóa tác nhân" style="text;html=1;fontSize=13;fontStyle=1;align=left" vertex="1" parent="1"><mxGeometry x="130" y="830" width="260" height="30" as="geometry"/></mxCell>
+        <mxCell id="c41" value="Quản trị viên
+(ADMIN)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=13;fontStyle=1" vertex="1" parent="1"><mxGeometry x="250" y="880" width="60" height="100" as="geometry"/></mxCell>
+        <mxCell id="c42" value="Trưởng bộ phận
+(MANAGER)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=13;fontStyle=1" vertex="1" parent="1"><mxGeometry x="130" y="1030" width="60" height="100" as="geometry"/></mxCell>
+        <mxCell id="c43" value="Nhà ăn
+(CANTEEN)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=13;fontStyle=1" vertex="1" parent="1"><mxGeometry x="380" y="1030" width="60" height="100" as="geometry"/></mxCell>
+        <mxCell id="e44" value="" style="endArrow=block;endFill=0;endSize=12;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c42" target="c41"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e45" value="" style="endArrow=block;endFill=0;endSize=12;html=1;strokeWidth=1;fontSize=11" edge="1" parent="1" source="c43" target="c41"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c46" value="Ghi chú:
+• Hệ thống gồm 8 nhóm chức năng với 38 use case chi tiết.
+• Quản trị viên kế thừa quyền của Trưởng bộ phận và Nhà ăn.
+• Chi tiết từng nhóm xem các sơ đồ use case phân rã." style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1"><mxGeometry x="830" y="850" width="480" height="120" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
